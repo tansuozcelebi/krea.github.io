@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Viewing and Annotation</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        #openPdf, #savePdf {
+            border-radius: 12px;
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            cursor: pointer;
+            position: absolute;
+            z-index: 10;
+        }
+        #openPdf {
+            background-color: #4CAF50;
+            top: 10px;
+            left: 10px;
+        }
+        #savePdf {
+            background-color: #008CBA;
+            top: 10px;
+            left: 120px;
+        }
+        canvas {
+            border: 3px solid black;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <button id="openPdf">PDF Open</button>
+    <button id="savePdf">Save</button>
+    <input type="file" id="fileInput" accept="application/pdf" style="display:none;">
+    <canvas id="pdfCanvas"></canvas>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script>
+        const openPdfButton = document.getElementById('openPdf');
+        const savePdfButton = document.getElementById('savePdf');
+        const fileInput = document.getElementById('fileInput');
+        const canvas = document.getElementById('pdfCanvas');
+        const ctx = canvas.getContext('2d');
+        let pdfDoc = null;
+        let pageNum = 1;
+        let markers = [];
+        let markerCount = 1;
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        openPdfButton.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file.type === 'application/pdf') {
+                const fileReader = new FileReader();
+                fileReader.onload = function() {
+                    const typedarray = new Uint8Array(this.result);
+                    pdfjsLib.getDocument(typedarray).promise.then((pdf) => {
+                        pdfDoc = pdf;
+                        renderPage(pageNum);
+                    });
+                };
+                fileReader.readAsArrayBuffer(file);
+            }
+        });
+
+        function renderPage(num) {
+            pdfDoc.getPage(num).then((page) => {
+                const viewport = page.getViewport({ scale: 1 });
+                const scale = 1;
+                const scaledViewport = page.getViewport({ scale: scale });
+                canvas.height = scaledViewport.height;
+                canvas.width = scaledViewport.width;
+
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: scaledViewport
+                };
+                page.render(renderContext).promise.then(() => {
+                    drawMarkers();
+                });
+            });
+        }
+
+        function drawMarkers() {
+            markers.forEach(marker => {
+                ctx.beginPath();
+                ctx.arc(marker.x, marker.y, 10, 0, 2 * Math.PI, false);
+                ctx.fillStyle = 'red';
+                ctx.fill();
+                ctx.font = '10px Arial';
+                ctx.fillStyle = 'white';
+                ctx.fillText(marker.count, marker.x - 3, marker.y + 3);
+            });
+        }
+
+        canvas.addEventListener('click', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            markers.push({ x, y, count: markerCount++ });
+            drawMarkers();
+        });
+
+        savePdfButton.addEventListener('click', saveCanvasAsPdf);
+
+        function saveCanvasAsPdf() {
+            const fileName = prompt('Enter file name:', 'annotated.pdf');
+            if (fileName) {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'px',
+                    format: [canvas.width, canvas.height]
+                });
+                pdf.addImage(canvas.toDataURL('image/jpeg'), 'JPEG', 0, 0, canvas.width, canvas.height);
+                pdf.save(fileName);
+            }
+        }
+
+        savePdfButton.addEventListener('click', saveCanvasAsPdf);
+        window.addEventListener('resize', () => {
+            if (pdfDoc) {
+                renderPage(pageNum);
+            }
+        });
+    </script>
+</body>
+</html>
