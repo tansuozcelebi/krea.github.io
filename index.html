@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h1>KREA</h1>
+<p>I'm hosted with GitHub Pages.</p>
+<div style="display: flex; flex-direction: column; width: 300px; border: 1px solid #ccc; padding: 10px;">
+    <button style="background-color: green; color: white; padding: 10px; margin-bottom: 10px;" onclick="location.href='app.html'">Go to App</button>
+    <button style="background-color: blue; color: white; padding: 10px;" onclick="showReadme()">Hakkında</button>
+    <div id="readme" style="display: none; margin-top: 10px; border: 1px solid #ccc; padding: 10px;">
+        <!-- Readme.md content will be loaded here -->
+    </div>
+</div>
+
+<script>
+function showReadme() {
+    fetch('Readme.md')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('readme').innerText = data;
+            document.getElementById('readme').style.display = 'block';
+        });
+}
+</script>
+</body>
+</html>
