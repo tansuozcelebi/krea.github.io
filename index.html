@@ -2,23 +2,80 @@
 <html>
 <body>
 <h1>KREA</h1>
-<p>I'm hosted with GitHub Pages.</p>
+<p>I'm hosted with GitHub Pages. Denemeler buradan </p>
+<div id="version-info" style="background-color: #f0f0f0; padding: 8px; margin-bottom: 10px; border-radius: 4px; font-size: 12px; color: #666;">
+    <span>Versiyon: <span id="current-version">Yükleniyor...</span></span>
+    <span style="margin-left: 10px;">Tarih: <span id="release-date">-</span></span>
+    <button onclick="showChangelog()" style="margin-left: 10px; font-size: 10px; padding: 2px 6px;">Değişiklikler</button>
+</div>
 <div style="display: flex; flex-direction: column; width: 300px; border: 1px solid #ccc; padding: 10px;">
     <button style="background-color: green; color: white; padding: 10px; margin-bottom: 10px;" onclick="location.href='app.html'">Go to App</button>
     <button style="background-color: blue; color: white; padding: 10px;" onclick="showReadme()">Hakkında</button>
     <div id="readme" style="display: none; margin-top: 10px; border: 1px solid #ccc; padding: 10px;">
         <!-- Readme.md content will be loaded here -->
     </div>
+    <div id="changelog" style="display: none; margin-top: 10px; border: 1px solid #ccc; padding: 10px; max-height: 300px; overflow-y: auto;">
+        <!-- Changelog content will be loaded here -->
+    </div>
 </div>
 
 <script>
+// Version bilgilerini yükle
+async function loadVersionInfo() {
+    try {
+        const response = await fetch('version.json');
+        const versionData = await response.json();
+        document.getElementById('current-version').textContent = versionData.version;
+        document.getElementById('release-date').textContent = versionData.releaseDate;
+        return versionData;
+    } catch (error) {
+        console.error('Version bilgisi yüklenemedi:', error);
+        document.getElementById('current-version').textContent = 'Bilinmiyor';
+    }
+}
+
+// Sayfa yüklendiğinde version bilgisini al
+window.addEventListener('load', loadVersionInfo);
+
 function showReadme() {
+    // Diğer panelleri gizle
+    document.getElementById('changelog').style.display = 'none';
+    
     fetch('README.md')
         .then(response => response.text())
         .then(data => {
             document.getElementById('readme').innerText = data;
             document.getElementById('readme').style.display = 'block';
         });
+}
+
+async function showChangelog() {
+    // Diğer panelleri gizle
+    document.getElementById('readme').style.display = 'none';
+    
+    try {
+        const response = await fetch('version.json');
+        const versionData = await response.json();
+        
+        let changelogHTML = '<h4>Versiyon Geçmişi</h4>';
+        versionData.changelog.forEach(entry => {
+            changelogHTML += `
+                <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+                    <strong>v${entry.version}</strong> <small>(${entry.date})</small>
+                    <ul style="margin: 5px 0;">
+                        ${entry.changes.map(change => `<li>${change}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        });
+        
+        document.getElementById('changelog').innerHTML = changelogHTML;
+        document.getElementById('changelog').style.display = 'block';
+    } catch (error) {
+        console.error('Changelog yüklenemedi:', error);
+        document.getElementById('changelog').innerHTML = '<p>Changelog yüklenemedi.</p>';
+        document.getElementById('changelog').style.display = 'block';
+    }
 }
 </script>
 </body>

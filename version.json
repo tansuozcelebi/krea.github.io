@@ -1,0 +1,24 @@
+{
+  "version": "1.0.0",
+  "releaseDate": "2025-09-28",
+  "buildNumber": 1,
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2025-09-28",
+      "type": "release",
+      "changes": [
+        "İlk stabil sürüm yayınlandı",
+        "GitHub Pages deployment eklendi",
+        "Ana sayfa ve uygulama sayfası hazırlandı",
+        "PDF görüntüleyici eklendi"
+      ]
+    }
+  ],
+  "metadata": {
+    "projectName": "KREA",
+    "description": "KREA Web Uygulaması",
+    "repository": "https://github.com/tansuozcelebi/krea.github.io",
+    "homepage": "https://tansuozcelebi.github.io/krea.github.io/"
+  }
+}
