@@ -4,14 +4,18 @@
 <h1>KREA</h1>
 <p>I'm hosted with GitHub Pages. Denemeler buradan </p>
 <div style="display: flex; flex-direction: column; width: 300px; border: 1px solid #ccc; padding: 10px;">
-    <button style="background-color: green; color: white; padding: 10px; margin-bottom: 10px;" onclick="location.href='app.html'">Go to App</button>
+    <button style="background-color: green; color: white; padding: 10px; margin-bottom: 10px;" onclick="location.href='app.html'">APP</button>
     <button style="background-color: blue; color: white; padding: 10px;" onclick="showReadme()">Hakkında</button>
     <button style="background-color: orange; color: white; padding: 10px; margin-top: 10px;" onclick="showChangelog()">Değişiklikler</button>
+    <button style="background-color: purple; color: white; padding: 10px; margin-top: 10px;" onclick="showVersions()">Versiyonlar</button>
     <div id="readme" style="display: none; margin-top: 10px; border: 1px solid #ccc; padding: 10px;">
         <!-- Readme.md content will be loaded here -->
     </div>
     <div id="changelog" style="display: none; margin-top: 10px; border: 1px solid #ccc; padding: 10px; max-height: 300px; overflow-y: auto;">
         <!-- Changelog content will be loaded here -->
+    </div>
+    <div id="versions" style="display: none; margin-top: 10px; border: 1px solid #ccc; padding: 10px; max-height: 300px; overflow-y: auto;">
+        <!-- Version list will be loaded here -->
     </div>
 </div>
 
@@ -84,6 +88,7 @@ window.addEventListener('load', loadVersionInfo);
 function showReadme() {
     // Diğer panelleri gizle
     document.getElementById('changelog').style.display = 'none';
+    document.getElementById('versions').style.display = 'none';
     
     fetch('README.md')
         .then(response => response.text())
@@ -96,6 +101,7 @@ function showReadme() {
 async function showChangelog() {
     // Diğer panelleri gizle
     document.getElementById('readme').style.display = 'none';
+    document.getElementById('versions').style.display = 'none';
     
     try {
         const response = await fetch('version.json');
@@ -119,6 +125,47 @@ async function showChangelog() {
         console.error('Changelog yüklenemedi:', error);
         document.getElementById('changelog').innerHTML = '<p>Changelog yüklenemedi.</p>';
         document.getElementById('changelog').style.display = 'block';
+    }
+}
+
+async function showVersions() {
+    // Diğer panelleri gizle
+    document.getElementById('readme').style.display = 'none';
+    document.getElementById('changelog').style.display = 'none';
+    
+    try {
+        const response = await fetch('version.json');
+        const versionData = await response.json();
+        
+        let versionsHTML = '<h4>Versiyon Listesi</h4>';
+        versionsHTML += '<div style="margin-bottom: 15px;">';
+        versionsHTML += `<div style="font-weight: bold; color: #2563eb;">Güncel Versiyon</div>`;
+        versionsHTML += `<div style="font-size: 18px; color: #059669;">v${versionData.version}</div>`;
+        versionsHTML += `<div style="font-size: 12px; color: #6b7280;">Build: ${versionData.buildNumber}</div>`;
+        versionsHTML += `<div style="font-size: 12px; color: #6b7280;">Tarih: ${versionData.releaseDate}</div>`;
+        versionsHTML += '</div>';
+        
+        versionsHTML += '<h5 style="margin-top: 20px; color: #374151;">Tüm Versiyonlar</h5>';
+        versionData.changelog.forEach(entry => {
+            const badgeColor = entry.type === 'major' ? '#dc2626' : entry.type === 'minor' ? '#2563eb' : '#059669';
+            versionsHTML += `
+                <div style="margin-bottom: 10px; padding: 8px; border-left: 3px solid ${badgeColor}; background-color: #f9fafb;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-weight: bold;">v${entry.version}</span>
+                        <span style="font-size: 11px; background-color: ${badgeColor}; color: white; padding: 2px 6px; border-radius: 10px;">${entry.type?.toUpperCase() || 'RELEASE'}</span>
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; margin-top: 2px;">${entry.date}</div>
+                    <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">${entry.changes?.length || 0} değişiklik</div>
+                </div>
+            `;
+        });
+        
+        document.getElementById('versions').innerHTML = versionsHTML;
+        document.getElementById('versions').style.display = 'block';
+    } catch (error) {
+        console.error('Versiyon bilgisi yüklenemedi:', error);
+        document.getElementById('versions').innerHTML = '<p>Versiyon bilgisi yüklenemedi.</p>';
+        document.getElementById('versions').style.display = 'block';
     }
 }
 </script>
