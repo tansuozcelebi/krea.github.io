@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h1>KREA</h1>
+<p>I'm hosted with GitHub Pages. Denemeler buradan </p>
+<div style="display: flex; flex-direction: column; width: 300px; border: 1px solid #ccc; padding: 10px;">
+    <button style="background-color: green; color: white; padding: 10px; margin-bottom: 10px;" onclick="location.href='app.html'">APP</button>
+    <button style="background-color: blue; color: white; padding: 10px;" onclick="showReadme()">Hakkında</button>
+    <button style="background-color: orange; color: white; padding: 10px; margin-top: 10px;" onclick="showChangelog()">Değişiklikler</button>
+    <button style="background-color: purple; color: white; padding: 10px; margin-top: 10px;" onclick="showVersions()">Versiyonlar</button>
+    <div id="readme" style="display: none; margin-top: 10px; border: 1px solid #ccc; padding: 10px;">
+        <!-- Readme.md content will be loaded here -->
+    </div>
+    <div id="changelog" style="display: none; margin-top: 10px; border: 1px solid #ccc; padding: 10px; max-height: 300px; overflow-y: auto;">
+        <!-- Changelog content will be loaded here -->
+    </div>
+    <div id="versions" style="display: none; margin-top: 10px; border: 1px solid #ccc; padding: 10px; max-height: 300px; overflow-y: auto;">
+        <!-- Version list will be loaded here -->
+    </div>
+</div>
+
+<!-- Sol alt köşede sabit versiyon bilgisi -->
+<div id="bottom-version" style="
+    position: fixed; 
+    bottom: 10px; 
+    left: 10px; 
+    background-color: rgba(0, 0, 0, 0.7); 
+    color: white; 
+    padding: 5px 10px; 
+    border-radius: 15px; 
+    font-size: 11px; 
+    font-family: monospace;
+    z-index: 1000;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+" onclick="toggleVersionDetails()" title="Versiyon detayları için tıklayın">
+    <span id="bottom-current-version">v1.0.0</span>
+    <div id="version-details" style="
+        display: none; 
+        margin-top: 5px; 
+        padding-top: 5px; 
+        border-top: 1px solid rgba(255,255,255,0.3);
+        font-size: 10px;
+    ">
+        <div>📅 <span id="bottom-release-date">2025-09-28</span></div>
+        <div>🔢 Build: <span id="bottom-build-number">1</span></div>
+    </div>
+</div>
+
+<script>
+// Version bilgilerini yükle
+async function loadVersionInfo() {
+    try {
+        const response = await fetch('version.json');
+        const versionData = await response.json();
+        
+        // Alt köşedeki versiyon bilgilerini güncelle
+        document.getElementById('bottom-current-version').textContent = 'v' + versionData.version;
+        document.getElementById('bottom-release-date').textContent = versionData.releaseDate;
+        document.getElementById('bottom-build-number').textContent = versionData.buildNumber;
+        
+        return versionData;
+    } catch (error) {
+        console.error('Version bilgisi yüklenemedi:', error);
+        document.getElementById('bottom-current-version').textContent = 'v?.?.?';
+    }
+}
+
+// Alt köşedeki versiyon detaylarını aç/kapat
+function toggleVersionDetails() {
+    const details = document.getElementById('version-details');
+    const isVisible = details.style.display !== 'none';
+    details.style.display = isVisible ? 'none' : 'block';
+    
+    // Hover efekti için arka plan rengini değiştir
+    const versionBox = document.getElementById('bottom-version');
+    if (!isVisible) {
+        versionBox.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+    } else {
+        versionBox.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    }
+}
+
+// Sayfa yüklendiğinde version bilgisini al
+window.addEventListener('load', loadVersionInfo);
+
+function showReadme() {
+    // Diğer panelleri gizle
+    document.getElementById('changelog').style.display = 'none';
+    document.getElementById('versions').style.display = 'none';
+    
+    fetch('README.md')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('readme').innerText = data;
+            document.getElementById('readme').style.display = 'block';
+        });
+}
+
+async function showChangelog() {
+    // Diğer panelleri gizle
+    document.getElementById('readme').style.display = 'none';
+    document.getElementById('versions').style.display = 'none';
+    
+    try {
+        const response = await fetch('version.json');
+        const versionData = await response.json();
+        
+        let changelogHTML = '<h4>Versiyon Geçmişi</h4>';
+        versionData.changelog.forEach(entry => {
+            changelogHTML += `
+                <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+                    <strong>v${entry.version}</strong> <small>(${entry.date})</small>
+                    <ul style="margin: 5px 0;">
+                        ${entry.changes.map(change => `<li>${change}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        });
+        
+        document.getElementById('changelog').innerHTML = changelogHTML;
+        document.getElementById('changelog').style.display = 'block';
+    } catch (error) {
+        console.error('Changelog yüklenemedi:', error);
+        document.getElementById('changelog').innerHTML = '<p>Changelog yüklenemedi.</p>';
+        document.getElementById('changelog').style.display = 'block';
+    }
+}
+
+async function showVersions() {
+    // Diğer panelleri gizle
+    document.getElementById('readme').style.display = 'none';
+    document.getElementById('changelog').style.display = 'none';
+    
+    try {
+        const response = await fetch('version.json');
+        const versionData = await response.json();
+        
+        let versionsHTML = '<h4>Versiyon Listesi</h4>';
+        versionsHTML += '<div style="margin-bottom: 15px;">';
+        versionsHTML += `<div style="font-weight: bold; color: #2563eb;">Güncel Versiyon</div>`;
+        versionsHTML += `<div style="font-size: 18px; color: #059669;">v${versionData.version}</div>`;
+        versionsHTML += `<div style="font-size: 12px; color: #6b7280;">Build: ${versionData.buildNumber}</div>`;
+        versionsHTML += `<div style="font-size: 12px; color: #6b7280;">Tarih: ${versionData.releaseDate}</div>`;
+        versionsHTML += '</div>';
+        
+        versionsHTML += '<h5 style="margin-top: 20px; color: #374151;">Tüm Versiyonlar</h5>';
+        versionData.changelog.forEach(entry => {
+            const badgeColor = entry.type === 'major' ? '#dc2626' : entry.type === 'minor' ? '#2563eb' : '#059669';
+            versionsHTML += `
+                <div style="margin-bottom: 10px; padding: 8px; border-left: 3px solid ${badgeColor}; background-color: #f9fafb;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-weight: bold;">v${entry.version}</span>
+                        <span style="font-size: 11px; background-color: ${badgeColor}; color: white; padding: 2px 6px; border-radius: 10px;">${entry.type?.toUpperCase() || 'RELEASE'}</span>
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; margin-top: 2px;">${entry.date}</div>
+                    <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">${entry.changes?.length || 0} değişiklik</div>
+                </div>
+            `;
+        });
+        
+        document.getElementById('versions').innerHTML = versionsHTML;
+        document.getElementById('versions').style.display = 'block';
+    } catch (error) {
+        console.error('Versiyon bilgisi yüklenemedi:', error);
+        document.getElementById('versions').innerHTML = '<p>Versiyon bilgisi yüklenemedi.</p>';
+        document.getElementById('versions').style.display = 'block';
+    }
+}
+</script>
+</body>
+</html>
