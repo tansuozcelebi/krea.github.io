@@ -1,4 +1,3 @@
-
 # KREA Web Uygulaması
 
 ## Genel Bakış
@@ -42,3 +41,10 @@ Buralarda eski olsamda incelemem gerekirdi.
 
 ## Canlı Uygulama
 🔗 https://tansuozcelebi.github.io/krea.github.io/
+
+
+
+Buralarda eski olsamda incelemem gerekirdi.
+
+==
+=====
