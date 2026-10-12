@@ -1,5 +1,13 @@
 # KREA - Versiyon Geçmişi
 
+## v1.0.1 (2025-09-28)
+**Patch Güncellemesi**
+
+### İyileştirmeler
+- 🎨 UI iyileştirmeleri: APP buton adı değiştirildi, yeni Versiyonlar paneli eklendi
+
+---
+
 ## v1.0.0 (2025-09-28)
 **İlk Stabil Sürüm**
 
